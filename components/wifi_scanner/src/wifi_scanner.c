@@ -7,6 +7,7 @@
 #include "lvgl.h"
 #include "nvs_flash.h"
 #include "regex.h"
+#include "rusty.h"
 
 #include "wifi_scanner.h"
 
@@ -19,9 +20,6 @@
 #define CHANNEL_LIST_SIZE 3
 static uint8_t channel_list[CHANNEL_LIST_SIZE] = {1, 6, 11};
 #endif /*CONFIG_EXAMPLE_USE_SCAN_CHANNEL_BITMAP*/
-
-
-extern uint64_t rusty_add(uint64_t left, uint64_t right);
 
 
 static const char *TAG = "scan";
