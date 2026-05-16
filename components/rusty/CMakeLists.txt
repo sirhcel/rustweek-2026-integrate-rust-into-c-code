@@ -1,4 +1,4 @@
-idf_component_register(INCLUDE_DIRS ".")
+idf_component_register(INCLUDE_DIRS "target/include")
 
 set(Rust_TOOLCHAIN "esp")
 set(Rust_CARGO_TARGET "xtensa-esp32s3-none-elf")
