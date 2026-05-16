@@ -6,6 +6,11 @@ pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }
 
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rusty_add(left: u64, right: u64) -> u64 {
+    add(left, right)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
