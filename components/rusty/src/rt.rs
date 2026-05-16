@@ -1,4 +1,5 @@
 use core::panic::PanicInfo;
+use libc_alloc::LibcAlloc;
 
 #[panic_handler]
 fn panic(_: &PanicInfo) -> ! {
@@ -6,3 +7,6 @@ fn panic(_: &PanicInfo) -> ! {
     // better propagate it to ESP-IDF panic/abort handling.
     loop {}
 }
+
+#[global_allocator]
+static ALLOCATOR: LibcAlloc = LibcAlloc;
