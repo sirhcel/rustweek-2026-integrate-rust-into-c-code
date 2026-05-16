@@ -21,6 +21,9 @@ static uint8_t channel_list[CHANNEL_LIST_SIZE] = {1, 6, 11};
 #endif /*CONFIG_EXAMPLE_USE_SCAN_CHANNEL_BITMAP*/
 
 
+extern uint64_t rusty_add(uint64_t left, uint64_t right);
+
+
 static const char *TAG = "scan";
 
 
@@ -253,6 +256,10 @@ void wifi_scanner(void) {
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
+
+    ESP_LOGI(TAG, "About to call first Rust function");
+    const uint64_t sum = rusty_add(2, 40);
+    ESP_LOGI(TAG, "rusty_add(2, 40): %" PRIu64, sum);
 
     background_scan_semaphore = xSemaphoreCreateBinary();
     assert(background_scan_semaphore);
