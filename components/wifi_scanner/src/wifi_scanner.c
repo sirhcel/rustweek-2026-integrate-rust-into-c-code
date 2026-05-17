@@ -22,6 +22,7 @@ static uint8_t channel_list[CHANNEL_LIST_SIZE] = {1, 6, 11};
 #endif /*CONFIG_EXAMPLE_USE_SCAN_CHANNEL_BITMAP*/
 
 #define URI_BUFFER_LEN 256
+#define PIXEL_BUFFER_LEN 4096
 
 
 static const char *TAG = "scan";
@@ -57,6 +58,34 @@ static wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE] = {0, };
 static uint16_t ap_info_length = 0;
 static uint16_t ap_info_index = 0;
 static uint16_t ap_count = 0;
+
+static uint8_t empty_image_data[1] = {0, };
+static lv_img_dsc_t empty_img_dsc = {
+    .header.always_zero = 0,
+    .header.w = 0,
+    .header.h = 0,
+    .data_size = 1,
+    .header.cf = LV_IMG_CF_TRUE_COLOR,
+    .data = empty_image_data,
+};
+static uint16_t image_data_1[PIXEL_BUFFER_LEN] = {0, };
+static lv_img_dsc_t qr_img_dsc_1 = {
+    .header.always_zero = 0,
+    .header.w = 0,
+    .header.h = 0,
+    .data_size = sizeof(uint16_t) * PIXEL_BUFFER_LEN,
+    .header.cf = LV_IMG_CF_TRUE_COLOR,
+    .data = (uint8_t *)image_data_1,
+};
+static uint8_t image_data_2[PIXEL_BUFFER_LEN] = {0, };
+static lv_img_dsc_t qr_img_dsc_2 = {
+    .header.always_zero = 0,
+    .header.w = 0,
+    .header.h = 0,
+    .data_size = sizeof(uint16_t) * PIXEL_BUFFER_LEN,
+    .header.cf = LV_IMG_CF_TRUE_COLOR,
+    .data = (uint8_t *)image_data_2,
+};
 
 
 static void scan_networks(void *parameters) {
@@ -122,6 +151,8 @@ typedef struct {
     lv_obj_t *ssid;
     lv_obj_t *rssi;
     lv_obj_t *auth;
+    lv_obj_t *qr;
+    lv_img_dsc_t *qr_img_dsc;
 } details_screen_t;
 
 static main_screen_t main_screen = {0, };
@@ -139,8 +170,7 @@ static void init_styles(void) {
     lv_style_set_text_font(&label_style, &lv_font_montserrat_14);
 }
 
-
-void init_details_screen(details_screen_t *screen, const char *title) {
+void init_details_screen(details_screen_t *screen, const char *title, lv_img_dsc_t *qr_img_dsc) {
     screen->screen = lv_obj_create(NULL);
     lv_obj_t *view = lv_obj_create(screen->screen);
     lv_obj_set_size(view, LV_HOR_RES, LV_VER_RES);
@@ -157,6 +187,10 @@ void init_details_screen(details_screen_t *screen, const char *title) {
     screen->auth = lv_label_create(view);
     lv_obj_set_style_text_font(screen->auth, &lv_font_montserrat_14, 0);
     lv_label_set_recolor(screen->auth, true);
+
+    screen->qr = lv_img_create(view);
+    lv_img_set_src(screen->qr, &empty_img_dsc);
+    screen->qr_img_dsc = qr_img_dsc;
 }
 
 
@@ -198,6 +232,8 @@ static void cycle_timer_cb(lv_timer_t *timer) {
     lv_obj_t *current_screen = lv_scr_act();
     lv_obj_t *new_screen = NULL;
 
+    assert(LV_COLOR_DEPTH == 16);
+
     if (ap_info_index < ap_info_length) {
         const wifi_ap_record_t *info = &ap_info[ap_info_index];
         details_screen_t *new_details = NULL;
@@ -230,6 +266,28 @@ static void cycle_timer_cb(lv_timer_t *timer) {
             ESP_LOGI(TAG, "WiFi uri: %s", uri);
         } else {
             ESP_LOGW(TAG, "generating WiFi URI failed");
+        }
+
+        ESP_LOGI(TAG, "about to generate QR code");
+        lv_img_dsc_t *img_dsc = new_details->qr_img_dsc;
+        // Safety: The data backing img_dsc->data is actually writeable and
+        // that's what we need for updating the image.
+        uint16_t *pixel_data = (uint16_t *)img_dsc->data;
+        size_t width_and_height = 0;
+        if (rusty_generate_wifi_qr((const char *)info->ssid, info->authmode, pixel_data, PIXEL_BUFFER_LEN, &width_and_height)) {
+            ESP_LOGI(TAG, "WiFi QR code generated, width: %u", width_and_height);
+
+            img_dsc->header.w = width_and_height;
+            img_dsc->header.h = width_and_height;
+            img_dsc->data_size = sizeof(uint16_t) * img_dsc->header.w * img_dsc->header.h;
+
+            lv_obj_update_layout(new_details->screen);
+
+            lv_img_set_src(new_details->qr, img_dsc);
+        } else {
+            ESP_LOGW(TAG, "generating WiFi QR code failed");
+
+            lv_img_set_src(new_details->qr, &empty_img_dsc);
         }
 
         ap_info_index += 1;
@@ -278,9 +336,9 @@ void wifi_scanner(void) {
     init_styles();
     init_main_screen(&main_screen, "WiFi Scanner");
     assert(main_screen.screen);
-    init_details_screen(&details_screen_1, "Network 1");
+    init_details_screen(&details_screen_1, "Network 1", &qr_img_dsc_1);
     assert(details_screen_1.screen);
-    init_details_screen(&details_screen_2, "Network 2");
+    init_details_screen(&details_screen_2, "Network 2", &qr_img_dsc_2);
     assert(details_screen_2.screen);
 
     lv_scr_load(main_screen.screen);
