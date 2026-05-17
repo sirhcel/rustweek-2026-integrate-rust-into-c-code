@@ -17,4 +17,5 @@ libc_alloc = { version = "1.0.7" }
 qrcode = { git = "https://github.com/kennytm/qrcode-rust.git", rev = "c7780e8549ac4fb3da81fdf7d7f010a27db78c0f", version = "0.14.1", default-features = false }
 
 [build-dependencies]
+bindgen = "0.72.1"
 cbindgen = "0.29.2"
