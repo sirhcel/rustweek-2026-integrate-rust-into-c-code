@@ -1,7 +1,7 @@
 use std::env;
 
-fn main() {
-    let crate_dir = env::var("CARGO_MANIFEST_DIR").expect("env var CARGO_MANIFEST_DIR missing");
+#[rustfmt::skip]
+fn generate_c_bingings() {
     let esp_idf_dir = env::var("IDF_PATH").expect("env var IDF_PATH missing");
     let project_dir = env::var("PROJECT_DIR").expect("env var PROJECT_DIR missing");
 
@@ -10,8 +10,6 @@ fn main() {
     let esp_wifi_include_dir = esp_idf_dir.clone() + "/components/esp_wifi/include";
     let esp_hw_support_include_dir = esp_idf_dir.clone() + "/components/esp_hw_support/include";
 
-    // Generate Rust bindings for some parts of the ESP-IDF imported by this crate.
-    #[rustfmt::skip]
     bindgen::builder()
         .use_core()
         .header("bindgen/esp_idf.h")
@@ -30,6 +28,13 @@ fn main() {
         .expect("generating FFI bindings for ESP-IDF failed")
         .write_to_file("src/sys/esp_idf.rs")
         .expect("writing FFI bindings for ESP-IDF failed");
+}
+
+fn main() {
+    let crate_dir = env::var("CARGO_MANIFEST_DIR").expect("env var CARGO_MANIFEST_DIR missing");
+
+    // Generate Rust bindings for some parts of the ESP-IDF imported by this crate.
+    generate_c_bingings();
 
     // Generate C bindings for FFI items exported from this crate.
     cbindgen::generate(crate_dir).map_or_else(
