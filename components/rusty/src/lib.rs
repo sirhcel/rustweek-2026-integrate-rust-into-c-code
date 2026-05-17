@@ -7,7 +7,7 @@ pub fn add(left: u64, right: u64) -> u64 {
 }
 
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn rusty_add(left: u64, right: u64) -> u64 {
+pub extern "C" fn rusty_add(left: u64, right: u64) -> u64 {
     add(left, right)
 }
 
