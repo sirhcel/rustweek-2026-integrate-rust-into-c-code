@@ -1,7 +1,7 @@
 use std::env;
 
 #[rustfmt::skip]
-fn generate_c_bingings() {
+fn generate_c_bindings() {
     let esp_idf_dir = env::var("IDF_PATH").expect("env var IDF_PATH missing");
     let project_dir = env::var("PROJECT_DIR").expect("env var PROJECT_DIR missing");
 
@@ -34,7 +34,7 @@ fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").expect("env var CARGO_MANIFEST_DIR missing");
 
     // Generate Rust bindings for some parts of the ESP-IDF imported by this crate.
-    generate_c_bingings();
+    generate_c_bindings();
 
     // Generate C bindings for FFI items exported from this crate.
     cbindgen::generate(crate_dir).map_or_else(
