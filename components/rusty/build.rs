@@ -11,6 +11,7 @@ fn main() {
     let esp_hw_support_include_dir = esp_idf_dir.clone() + "/components/esp_hw_support/include";
 
     // Generate Rust bindings for some parts of the ESP-IDF imported by this crate.
+    #[rustfmt::skip]
     bindgen::builder()
         .use_core()
         .header("bindgen/esp_idf.h")
