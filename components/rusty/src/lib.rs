@@ -3,6 +3,7 @@
 #[cfg(not(any(unix, windows)))]
 mod rt;
 
+/// cbindgen:ignore
 mod sys;
 
 pub fn add(left: u64, right: u64) -> u64 {
