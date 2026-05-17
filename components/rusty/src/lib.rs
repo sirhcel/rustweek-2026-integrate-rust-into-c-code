@@ -1,5 +1,6 @@
 #![no_std]
 
+#[cfg(not(any(unix, windows)))]
 mod rt;
 
 pub fn add(left: u64, right: u64) -> u64 {
