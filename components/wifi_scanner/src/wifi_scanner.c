@@ -21,6 +21,8 @@
 static uint8_t channel_list[CHANNEL_LIST_SIZE] = {1, 6, 11};
 #endif /*CONFIG_EXAMPLE_USE_SCAN_CHANNEL_BITMAP*/
 
+#define URI_BUFFER_LEN 256
+
 
 static const char *TAG = "scan";
 
@@ -222,6 +224,13 @@ static void cycle_timer_cb(lv_timer_t *timer) {
         lv_label_set_text(new_details->ssid, (const char *)info->ssid);
         lv_label_set_text_fmt(new_details->rssi, "#657377 RSSI:# %d", info->rssi);
         lv_label_set_text_fmt(new_details->auth, "#657377 Auth:# %s", pretty_authmode(info->authmode));
+
+        char uri[URI_BUFFER_LEN] = {0, };
+        if (rusty_generate_wifi_uri((const char *)info->ssid, info->authmode, uri, URI_BUFFER_LEN)) {
+            ESP_LOGI(TAG, "WiFi uri: %s", uri);
+        } else {
+            ESP_LOGW(TAG, "generating WiFi URI failed");
+        }
 
         ap_info_index += 1;
     } else {
