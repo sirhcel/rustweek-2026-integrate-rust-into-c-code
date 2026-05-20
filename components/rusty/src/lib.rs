@@ -125,7 +125,7 @@ pub unsafe extern "C" fn rusty_generate_wifi_qr(
         };
 
         let width = code.width();
-        let colors = code.to_colors();
+        let colors = code.into_colors();
 
         if let Some(total_pixels) = width.checked_mul(width)
             && total_pixels <= pixel_capacity
