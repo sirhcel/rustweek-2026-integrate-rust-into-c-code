@@ -128,7 +128,8 @@ pub unsafe extern "C" fn rusty_generate_wifi_qr(
         let colors = code.into_colors();
 
         if let Some(total_pixels) = width.checked_mul(width)
-            && total_pixels <= pixel_capacity
+            && colors.len() == total_pixels
+            && colors.len() <= pixel_capacity
         {
             for (index, color) in colors.iter().enumerate() {
                 let value = match color {
@@ -136,9 +137,14 @@ pub unsafe extern "C" fn rusty_generate_wifi_qr(
                     Color::Dark => 0x0000,
                 };
 
+                // SAFETY: We checked that pixel data is not null and placed the rest of the
+                // requirements for a valid output pointer a the parameter. We also checked that
+                // there is enough space for all pixels in the output buffer.
                 unsafe { pixel_data.add(index).write(value) };
             }
 
+            // SAFETY: We checked that the output pointer is not null and place the rest of the
+            // requirements at the parameter.
             unsafe { width_and_height.write(width) };
             true
         } else {
